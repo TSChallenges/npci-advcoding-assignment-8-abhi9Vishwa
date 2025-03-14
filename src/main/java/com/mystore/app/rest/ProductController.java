@@ -25,29 +25,25 @@ public class ProductController {
     }
 
     @GetMapping("")
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+    public ResponseEntity<Page<Product>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        Page<Product> products = productService.getAllProducts(page, pageSize, sortBy, sortDir);
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProduct(@PathVariable("id") Integer id) {
         Product p = productService.getProduct(id);
-        if (p != null) {
-            return new ResponseEntity<>(p, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        }
+        return p != null ? new ResponseEntity<>(p, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable("id") Integer id, @Valid @RequestBody Product product) {
         Product p = productService.updateProduct(id, product);
-        if (p != null) {
-            return new ResponseEntity<>(p, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }
+        return p != null ? new ResponseEntity<>(p, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping("/{id}")
@@ -56,16 +52,31 @@ public class ProductController {
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
-    // TODO: API to search products by name
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchProductsByName(@RequestParam String name) {
+        List<Product> products = productService.searchByName(name);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
 
+    @GetMapping("/filter/category")
+    public ResponseEntity<List<Product>> filterProductsByCategory(@RequestParam String category) {
+        List<Product> products = productService.filterByCategory(category);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
 
-    // TODO: API to filter products by category
+    @GetMapping("/filter/price")
+    public ResponseEntity<List<Product>> filterProductsByPrice(
+            @RequestParam Double minPrice,
+            @RequestParam Double maxPrice) {
+        List<Product> products = productService.filterByPrice(minPrice, maxPrice);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
 
-
-    // TODO: API to filter products by price range
-
-
-    // TODO: API to filter products by stock quantity range
-
-
+    @GetMapping("/filter/stock")
+    public ResponseEntity<List<Product>> filterProductsByStock(
+            @RequestParam Integer minStock,
+            @RequestParam Integer maxStock) {
+        List<Product> products = productService.filterByStock(minStock, maxStock);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
 }
